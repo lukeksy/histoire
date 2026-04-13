@@ -1,13 +1,19 @@
 /**
  * Stockage JSON — remplace better-sqlite3
  * Aucune dépendance native, fonctionne partout (Hostinger inclus)
- * Les données sont stockées dans data/histoire.json
+ *
+ * Chemin des données :
+ *   - Si DATA_PATH est défini dans .env → utilise ce dossier (recommandé en prod)
+ *   - Sinon → utilise data/ dans le dossier de l'application (dev local)
+ *
+ * Sur Hostinger, définissez DATA_PATH=/home/u800131214/histoire-data
+ * pour persister les données entre les déploiements.
  */
 
 const fs   = require('fs');
 const path = require('path');
 
-const DATA_DIR  = path.join(__dirname, '../data');
+const DATA_DIR  = process.env.DATA_PATH || path.join(__dirname, '../data');
 const DATA_FILE = path.join(DATA_DIR, 'histoire.json');
 
 // ── Lecture / écriture du fichier JSON ────────────────────────────────────────
@@ -32,7 +38,7 @@ function writeData(data) {
 function initDatabase() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(DATA_FILE)) writeData({ topics: [], nextId: 1 });
-  console.log('✅ Stockage JSON initialisé');
+  console.log(`✅ Stockage JSON initialisé → ${DATA_FILE}`);
 }
 
 // ── Fonctions CRUD ─────────────────────────────────────────────────────────────

@@ -24,7 +24,14 @@ router.get('/daily', async (req, res) => {
     res.json({ topics });
   } catch (error) {
     console.error('Erreur génération sujets:', error);
-    res.status(500).json({ error: 'Erreur lors de la génération des sujets du jour.' });
+    // Retourne le détail de l'erreur pour faciliter le diagnostic
+    res.status(500).json({
+      error: 'Erreur lors de la génération des sujets du jour.',
+      detail: error.message,
+      hint: !process.env.ANTHROPIC_API_KEY
+        ? 'ANTHROPIC_API_KEY manquante — configurez-la dans les variables d\'environnement Hostinger.'
+        : null,
+    });
   }
 });
 

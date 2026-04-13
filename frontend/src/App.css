@@ -600,6 +600,80 @@ body {
   margin-bottom: 20px;
 }
 
+/* ─── Page de login ──────────────────────────────────────────────────── */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow);
+}
+
+.login-icon  { font-size: 56px; margin-bottom: 4px; }
+
+.login-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  color: var(--gold);
+  font-weight: 700;
+  text-align: center;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.login-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  font-size: 16px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color var(--transition);
+  letter-spacing: 2px;
+}
+.login-input::placeholder { letter-spacing: 0; color: var(--text-dim); }
+.login-input:focus { border-color: var(--gold); }
+
+.login-error {
+  font-size: 13px;
+  color: #e07777;
+  text-align: center;
+  padding: 8px 12px;
+  background: rgba(139, 44, 44, 0.1);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(139, 44, 44, 0.3);
+}
+
 /* ─── Responsive fine-tuning ─────────────────────────────────────────── */
 @media (min-width: 480px) {
   .navbar { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
