@@ -1,36 +1,110 @@
-const Database = require('better-sqlite3');
-const path = require('path');
-const fs = require('fs');
+/**
+ * Stockage JSON — remplace better-sqlite3
+ * Aucune dépendance native, fonctionne partout (Hostinger inclus)
+ * Les données sont stockées dans data/histoire.json
+ */
 
-// Dossier pour stocker la base de données
-const DATA_DIR = path.join(__dirname, '../data');
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+const fs   = require('fs');
+const path = require('path');
+
+const DATA_DIR  = path.join(__dirname, '../data');
+const DATA_FILE = path.join(DATA_DIR, 'histoire.json');
+
+// ── Lecture / écriture du fichier JSON ────────────────────────────────────────
+
+function readData() {
+  if (!fs.existsSync(DATA_FILE)) {
+    return { topics: [], nextId: 1 };
+  }
+  try {
+    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+  } catch {
+    return { topics: [], nextId: 1 };
+  }
 }
 
-// Connexion à la base de données SQLite
-const db = new Database(path.join(DATA_DIR, 'histoire.db'));
+function writeData(data) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+}
 
-// Activer les performances WAL (meilleure concurrence)
-db.pragma('journal_mode = WAL');
+// ── Initialisation ─────────────────────────────────────────────────────────────
 
 function initDatabase() {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS topics (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      era TEXT,
-      category TEXT,
-      summary TEXT,
-      content TEXT,
-      status TEXT DEFAULT 'pending',
-      created_date TEXT NOT NULL,
-      swiped_at TEXT,
-      content_generated_at TEXT,
-      learned_at TEXT
-    );
-  `);
-  console.log('✅ Base de données initialisée');
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(DATA_FILE)) writeData({ topics: [], nextId: 1 });
+  console.log('✅ Stockage JSON initialisé');
 }
 
-module.exports = { db, initDatabase };
+// ── Fonctions CRUD ─────────────────────────────────────────────────────────────
+
+function getTopicsByDate(date) {
+  return readData().topics.filter(t => t.created_date === date);
+}
+
+function insertTopics(topicsToInsert, date) {
+  const data = readData();
+  for (const t of topicsToInsert) {
+    data.topics.push({
+      id:                   data.nextId++,
+      title:                t.title,
+      era:                  t.era,
+      category:             t.category,
+      summary:              t.summary,
+      content:              null,
+      status:               'pending',
+      created_date:         date,
+      swiped_at:            null,
+      content_generated_at: null,
+      learned_at:           null,
+    });
+  }
+  writeData(data);
+  return data.topics.filter(t => t.created_date === date);
+}
+
+function getTopicById(id) {
+  const data = readData();
+  return data.topics.find(t => t.id === parseInt(id, 10)) || null;
+}
+
+function updateTopic(id, updates) {
+  const data  = readData();
+  const index = data.topics.findIndex(t => t.id === parseInt(id, 10));
+  if (index === -1) return null;
+  data.topics[index] = { ...data.topics[index], ...updates };
+  writeData(data);
+  return data.topics[index];
+}
+
+function getLikedTopics() {
+  return readData().topics
+    .filter(t => t.status === 'liked' || t.status === 'super_liked')
+    .sort((a, b) => (b.swiped_at || '').localeCompare(a.swiped_at || ''));
+}
+
+function getLearnedTopics() {
+  return readData().topics
+    .filter(t => t.status === 'learned')
+    .sort((a, b) => (b.learned_at || '').localeCompare(a.learned_at || ''));
+}
+
+function deletePendingByDate(date) {
+  const data = readData();
+  data.topics = data.topics.filter(
+    t => !(t.created_date === date && t.status === 'pending')
+  );
+  writeData(data);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+module.exports = {
+  initDatabase,
+  getTopicsByDate,
+  insertTopics,
+  getTopicById,
+  updateTopic,
+  getLikedTopics,
+  getLearnedTopics,
+  deletePendingByDate,
+};
