@@ -1,0 +1,24 @@
+# Dépendances
+node_modules/
+frontend/node_modules/
+
+# Variables secrètes — NE JAMAIS versionner
+.env
+
+# Base de données locale (données personnelles)
+data/
+
+# Build React généré
+public/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Système
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
